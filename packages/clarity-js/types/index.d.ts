@@ -4,6 +4,7 @@ import * as Diagnostic from "./diagnostic";
 import * as Layout from "./layout";
 import * as Interaction from "./interaction";
 import * as Performance from "./performance";
+import { snapshot } from "../src/insight/snapshot"; 
 
 interface Clarity {
   start: (config?: Core.Config) => void;
@@ -35,4 +36,4 @@ declare const clarity: Clarity;
 declare const helper: Helper;
 declare const version: string;
 
-export { clarity, version, helper, Core, Data, Diagnostic, Layout, Interaction, Performance };
+export { clarity, version, helper, snapshot, Core, Data, Diagnostic, Layout, Interaction, Performance };
