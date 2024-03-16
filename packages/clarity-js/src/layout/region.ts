@@ -29,7 +29,7 @@ export function observe(node: Node, name: string): void {
             // This allows us to process regions that get partially hidden during the lifetime of the page
             // See: https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API#creating_an_intersection_observer
             // By default, intersection observers only fire an event when even a single pixel is visible and not thereafter.
-            threshold: [0,0.2,0.4,0.6,0.8,1]
+            threshold: [0, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
         }) : observer;
         if (observer && node && node.nodeType === Node.ELEMENT_NODE) {
             observer.observe(node as Element);
@@ -65,13 +65,11 @@ export function compute(): void {
     let q = [];
     for (let r of queue) {
         let id = dom.getId(r.node);
-        if (!(id in regions)) {
-            if (id) {
-                r.data.id = id;
-                regions[id] = r.data;
-                state.push(clone(r.data));
-            } else { q.push(r); }
-        }
+        if (id) {
+            r.state.data.id = id;
+            regions[id] = r.state.data;
+            state.push(r.state);
+        } else { q.push(r); }
     }
     queue = q;
 
@@ -126,7 +124,10 @@ function process(n: Node, d: RegionData, s: InteractionState, v: RegionVisibilit
             regions[d.id] = d;
             state.push(clone(d));
         }
-    } else { queue.push({node: n, data: d}); }
+    } else {
+        // Get the time before adding to queue to ensure accurate event time
+        queue.push({node: n, state: clone(d)}); 
+    }
 }
 
 function clone(r: RegionData): RegionState {

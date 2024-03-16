@@ -78,7 +78,7 @@ export default function (node: Node, source: Source): Node {
             // Also, we do not track text nodes for STYLE tags
             // The only exception is when we receive a mutation to remove the text node, in that case
             // parent will be null, but we can still process the node by checking it's an update call.
-            if (call === "update" || (parent && dom.has(parent) && parent.tagName !== "STYLE")) {
+            if (call === "update" || (parent && dom.has(parent) && parent.tagName !== "STYLE" && parent.tagName !== "NOSCRIPT")) {
                 let textData = { tag: Constant.TextTag, value: node.nodeValue };
                 dom[call](node, parent, textData, source);
             }
@@ -108,6 +108,10 @@ export default function (node: Node, source: Source): Node {
                     }
                     break;
                 case "NOSCRIPT":
+                    // keeping the noscript tag but ignoring its contents. Some HTML markup relies on having these tags
+                    // to maintain parity with the original css view, but we don't want to execute any noscript in Clarity
+                    let noscriptData = { tag, attributes: {}, value: '' };
+                    dom[call](node, parent, noscriptData, source);
                     break;
                 case "META":
                     var key = (Constant.Property in attributes ?
@@ -177,6 +181,16 @@ export default function (node: Node, source: Source): Node {
                     // for links that aren't electron style sheets we can process them normally
                     let linkData = { tag, attributes };
                     dom[call](node, parent, linkData, source);
+                    break;
+                case "VIDEO":
+                case "AUDIO":
+                case "SOURCE":
+                    // Ignoring any base64 src attribute for media elements to prevent big unused tokens to be sent and shock the network 
+                    if (Constant.Src in attributes && attributes[Constant.Src].startsWith("data:")) {
+                        delete attributes[Constant.Src]
+                    }
+                    let mediaTag = { tag, attributes };
+                    dom[call](node, parent, mediaTag, source);
                     break;
                 default:
                     let data = { tag, attributes };
