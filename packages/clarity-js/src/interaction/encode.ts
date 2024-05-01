@@ -122,8 +122,10 @@ export default async function (type: Event, ts: number = null): Promise<void> {
                     tokens.push(sTarget.id);
                     tokens.push(entry.data.x);
                     tokens.push(entry.data.y);
+                    tokens.push(entry.data.top);
+                    tokens.push(entry.data.bottom);
                     queue(tokens);
-                    baseline.track(entry.event, entry.data.x, entry.data.y);
+                    baseline.track(entry.event, entry.data.x, entry.data.y, entry.time);
                 }
             }
             scroll.reset();
